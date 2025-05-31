@@ -1,0 +1,8 @@
+/* style.css (optional) */
+/* Example: smooth transition for hover effects */
+.episode-card {
+    transition: transform 0.2s ease-in-out;
+}
+.episode-card:hover {
+    transform: scale(1.05); /* Slightly enlarge on hover */
+}

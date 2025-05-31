@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Netflix Clone</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <style>
+        /* Smooth transition for episode cards when hovered over */
+        .episode-card {
+            transition: transform 0.2s ease-in-out;
+            position: relative;
+            z-index: 1;
+        }
+        .episode-card:hover {
+            transform: scale(1.05);
+            z-index: 10;
+            box-shadow: 0 0 15px rgba(229, 9, 20, 0.5);
+        }
+        #video-player-container {
+            position: relative;
+            width: 100%;
+            max-height: 80vh; /* Limits height to 80% of viewport height */
+            background-color: black;
+            border-radius: 0.5rem; /* rounded-lg */
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(229, 9, 20, 0.6); /* Deeper shadow for player */
+        }
+        #video-player {
+            width: 100%;
+            height: auto; /* Maintain aspect ratio */
+            display: block; /* Remove extra space below video */
+        }
+
+        /* Custom controls styling */
+        .video-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7); /* Semi-transparent black background */
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            opacity: 0; /* Hidden by default */
+            transition: opacity 0.3s ease-in-out;
+            z-index: 10;
+        }
+        #video-player-container:hover .video-controls,
+        #video-player-container.playing .video-controls:hover, /* Keep controls visible when playing and hovered */
+        #video-player-container.paused .video-controls { /* Always visible when paused */
+            opacity: 1;
+        }
+
+        .video-controls button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            transition: color 0.2s;
+        }
+        .video-controls button:hover {
+            color: #ef4444; /* red-500 */
+        }
+        .video-controls input[type="range"] {
+            -webkit-appearance: none; /* Override default slider styles */
+            appearance: none;
+            height: 8px;
+            background: #555;
+            outline: none;
+            opacity: 0.7;
+            transition: opacity .2s;
+            border-radius: 5px;
+            flex-grow: 1; /* Allows it to take available space */
+            margin: 0 1rem;
+        }
+        .video-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #dc2626; /* red-600 */
+            cursor: pointer;
+        }
+        .video-controls input[type="range"]::-moz-range-thumb {
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: #dc2626; /* red-600 */
+            cursor: pointer;
+        }
+        .time-display {
+            font-size: 0.9rem;
+            min-width: 90px; /* Prevent jumping when time updates */
+            text-align: center;
+        }
+        .volume-control {
+            display: flex;
+            align-items: center;
+        }
+        .volume-control input[type="range"] {
+            width: 80px; /* Smaller width for volume slider */
+            margin-right: 0.5rem;
+        }
+
+        /* Hide scrollbars */
+        ::-webkit-scrollbar { width: 0; background: transparent; }
+        html { scrollbar-width: none; }
+        body { -ms-overflow-style: none; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white font-sans overflow-x-hidden">
+
+    <header class="bg-gray-800 bg-opacity-90 p-4 shadow-lg fixed top-0 left-0 right-0 z-20">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-red-600 text-4xl font-bold tracking-wider">NETFLIX</h1>
+            <nav class="hidden md:block">
+                <a href="#" class="text-white hover:text-red-400 mx-4 text-lg font-medium">Home</a>
+                <a href="#" class="text-white hover:text-red-400 mx-4 text-lg font-medium">TV Shows</a>
+                <a href="#" class="text-white hover:text-red-400 mx-4 text-lg font-medium">Movies</a>
+                <a href="#" class="text-white hover:text-red-400 mx-4 text-lg font-medium">My List</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-24">
+        <section id="video-player-section" class="mb-12 hidden transition-opacity duration-500 ease-in-out opacity-0">
+            <h2 id="current-episode-title" class="text-3xl font-bold mb-4 text-red-600"></h2>
+            <div id="video-player-container" class="relative">
+                <video id="video-player" class="w-full h-auto" poster=""></video>
+
+                <div class="video-controls">
+                    <button id="play-pause-btn" title="Play/Pause">
+                        <i class="fas fa-play"></i>
+                    </button>
+
+                    <button id="skip-backward-btn" title="Skip Backward 10s">
+                        <i class="fas fa-backward"></i>
+                    </button>
+
+                    <button id="skip-forward-btn" title="Skip Forward 10s">
+                        <i class="fas fa-forward"></i>
+                    </button>
+
+                    <input type="range" id="progress-bar" min="0" max="100" value="0">
+
+                    <span id="time-display" class="time-display text-gray-300">00:00 / 00:00</span>
+
+                    <div class="volume-control ml-4">
+                        <button id="volume-btn" title="Mute/Unmute">
+                            <i class="fas fa-volume-up"></i>
+                        </button>
+                        <input type="range" id="volume-bar" min="0" max="1" step="0.05" value="1">
+                    </div>
+
+                    <button id="fullscreen-btn" class="ml-4" title="Toggle Fullscreen">
+                        <i class="fas fa-expand"></i>
+                    </button>
+                </div>
+            </div>
+            <p id="current-episode-description" class="text-gray-300 mt-4 text-lg leading-relaxed"></p>
+            <button id="close-player-btn" class="mt-6 px-8 py-3 bg-red-700 hover:bg-red-800 text-white font-bold rounded-full shadow-lg transition duration-300 ease-in-out transform hover:scale-105">
+                Close Player
+            </button>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6 text-gray-100">Your Shows</h2>
+            <div id="shows-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                </div>
+        </section>
+
+        <section class="mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold mb-6 text-gray-100">Recommended for You</h2>
+            <div id="recommended-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                </div>
+        </section>
+    </main>
+
+    <script>
+        // --- 1. Global Episode Data Array ---
+        let allEpisodes = [];
+
+        // --- 2. Get DOM Elements ---
+        const showsContainer = document.getElementById('shows-container');
+        const recommendedContainer = document.getElementById('recommended-container');
+        const videoPlayerSection = document.getElementById('video-player-section');
+        const videoPlayerContainer = document.getElementById('video-player-container'); // New
+        const videoPlayer = document.getElementById('video-player');
+        const currentEpisodeTitle = document.getElementById('current-episode-title');
+        const currentEpisodeDescription = document.getElementById('current-episode-description');
+        const closePlayerBtn = document.getElementById('close-player-btn');
+
+        // New Custom Controls Elements
+        const playPauseBtn = document.getElementById('play-pause-btn');
+        const playPauseIcon = playPauseBtn.querySelector('i');
+        const skipBackwardBtn = document.getElementById('skip-backward-btn');
+        const skipForwardBtn = document.getElementById('skip-forward-btn');
+        const progressBar = document.getElementById('progress-bar');
+        const timeDisplay = document.getElementById('time-display');
+        const volumeBtn = document.getElementById('volume-btn');
+        const volumeIcon = volumeBtn.querySelector('i');
+        const volumeBar = document.getElementById('volume-bar');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+
+        // --- 3. Helper Function to Format Time ---
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = Math.floor(seconds % 60);
+            const paddedMinutes = String(minutes).padStart(2, '0');
+            const paddedSeconds = String(remainingSeconds).padStart(2, '0');
+            return `${paddedMinutes}:${paddedSeconds}`;
+        }
+
+        // --- 4. Function to Fetch Episode Data ---
+        async function fetchEpisodeData() {
+            try {
+                const response = await fetch('episode_data.json');
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                allEpisodes = await response.json();
+                renderEpisodeCards(showsContainer, allEpisodes);
+                // renderEpisodeCards(recommendedContainer, allEpisodes.slice(0, 6));
+            } catch (error) {
+                console.error('Could not fetch episode data:', error);
+                showsContainer.innerHTML = '<p class="text-red-500 text-center text-xl">Error loading episodes. Make sure "episode_data.json" exists and your local web server is running correctly.</p>';
+            }
+        }
+
+        // --- 5. Function to Render Episode Cards ---
+        function renderEpisodeCards(container, episodes) {
+            container.innerHTML = '';
+            episodes.forEach(episode => {
+                const episodeCard = document.createElement('div');
+                episodeCard.id = episode.id;
+                episodeCard.className = 'episode-card bg-gray-800 rounded-lg overflow-hidden shadow-lg cursor-pointer transform transition duration-300 hover:scale-105';
+
+                if (episode.posterPath) {
+                    const posterImg = document.createElement('img');
+                    posterImg.src = episode.posterPath;
+                    posterImg.alt = episode.title;
+                    posterImg.className = 'w-full h-48 object-cover';
+                    episodeCard.appendChild(posterImg);
+                } else {
+                    const placeholder = document.createElement('div');
+                    placeholder.className = 'w-full h-48 bg-gray-700 flex items-center justify-center text-gray-400 text-center p-4 text-xl font-semibold';
+                    placeholder.textContent = episode.title;
+                    episodeCard.appendChild(placeholder);
+                }
+
+                const titleDiv = document.createElement('div');
+                titleDiv.className = 'p-4';
+                const titleText = document.createElement('h3');
+                titleText.className = 'text-lg font-semibold truncate text-gray-100';
+                titleText.textContent = episode.title;
+                titleDiv.appendChild(titleText);
+                episodeCard.appendChild(titleDiv);
+
+                episodeCard.addEventListener('click', () => playEpisode(episode.id));
+
+                container.appendChild(episodeCard);
+            });
+        }
+
+        // --- 6. Function to Play a Selected Episode ---
+        function playEpisode(episodeId) {
+            const episode = allEpisodes.find(ep => ep.id === episodeId);
+
+            if (episode) {
+                currentEpisodeTitle.textContent = episode.title;
+                currentEpisodeDescription.textContent = episode.description;
+                videoPlayer.src = episode.filePath;
+                videoPlayer.poster = episode.posterPath || '';
+                
+                // Show player section
+                videoPlayerSection.classList.remove('hidden');
+                setTimeout(() => {
+                    videoPlayerSection.classList.remove('opacity-0');
+                    videoPlayerSection.classList.add('opacity-100');
+                }, 10);
+
+                videoPlayer.load(); // Load the new video source
+                videoPlayer.play(); // Start playing automatically
+                
+                // Update play/pause button immediately
+                playPauseIcon.classList.remove('fa-play');
+                playPauseIcon.classList.add('fa-pause');
+                videoPlayerContainer.classList.remove('paused');
+                videoPlayerContainer.classList.add('playing');
+
+
+                videoPlayerSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            } else {
+                console.error('Episode not found with ID:', episodeId);
+            }
+        }
+
+        // --- 7. Event Listeners for Custom Video Controls ---
+
+        // Play/Pause Toggle
+        playPauseBtn.addEventListener('click', () => {
+            if (videoPlayer.paused || videoPlayer.ended) {
+                videoPlayer.play();
+            } else {
+                videoPlayer.pause();
+            }
+        });
+
+        // Update Play/Pause Button Icon on Play/Pause Events
+        videoPlayer.addEventListener('play', () => {
+            playPauseIcon.classList.remove('fa-play');
+            playPauseIcon.classList.add('fa-pause');
+            videoPlayerContainer.classList.remove('paused');
+            videoPlayerContainer.classList.add('playing');
+        });
+
+        videoPlayer.addEventListener('pause', () => {
+            playPauseIcon.classList.remove('fa-pause');
+            playPauseIcon.classList.add('fa-play');
+            videoPlayerContainer.classList.remove('playing');
+            videoPlayerContainer.classList.add('paused');
+        });
+
+        videoPlayer.addEventListener('ended', () => {
+            playPauseIcon.classList.remove('fa-pause');
+            playPauseIcon.classList.add('fa-play');
+            videoPlayerContainer.classList.remove('playing');
+            videoPlayerContainer.classList.add('paused');
+            // Optionally, hide controls after video ends
+            videoPlayerContainer.classList.add('paused');
+        });
+
+        // Skip Backward
+        skipBackwardBtn.addEventListener('click', () => {
+            videoPlayer.currentTime -= 10; // Skip back 10 seconds
+        });
+
+        // Skip Forward
+        skipForwardBtn.addEventListener('click', () => {
+            videoPlayer.currentTime += 10; // Skip forward 10 seconds
+        });
+
+        // Update Progress Bar and Time Display
+        videoPlayer.addEventListener('timeupdate', () => {
+            const currentTime = videoPlayer.currentTime;
+            const duration = videoPlayer.duration;
+
+            // Update progress bar
+            if (duration) {
+                progressBar.value = (currentTime / duration) * 100;
+                // Update the background of the progress bar to show fill
+                const progress = (currentTime / duration) * 100;
+                progressBar.style.background = `linear-gradient(to right, #dc2626 ${progress}%, #555 ${progress}%)`;
+            }
+
+            // Update time display
+            timeDisplay.textContent = `${formatTime(currentTime)} / ${formatTime(duration)}`;
+        });
+
+        // Set max value for progress bar once video metadata is loaded
+        videoPlayer.addEventListener('loadedmetadata', () => {
+            progressBar.max = 100; // Max value for percentage
+            progressBar.value = 0;
+            timeDisplay.textContent = `00:00 / ${formatTime(videoPlayer.duration)}`;
+        });
+
+        // Seek (drag progress bar)
+        progressBar.addEventListener('input', () => {
+            const seekTime = (progressBar.value / 100) * videoPlayer.duration;
+            if (videoPlayer.duration) { // Ensure duration is valid before seeking
+                videoPlayer.currentTime = seekTime;
+            }
+        });
+
+        // Volume Control
+        let lastVolume = 1; // To remember volume before mute
+        volumeBtn.addEventListener('click', () => {
+            if (videoPlayer.volume === 0) {
+                videoPlayer.volume = lastVolume; // Unmute
+                volumeBar.value = lastVolume;
+            } else {
+                lastVolume = videoPlayer.volume; // Remember current volume
+                videoPlayer.volume = 0; // Mute
+                volumeBar.value = 0;
+            }
+            updateVolumeIcon();
+        });
+
+        volumeBar.addEventListener('input', () => {
+            videoPlayer.volume = volumeBar.value;
+            updateVolumeIcon();
+        });
+
+        // Update volume icon based on volume level
+        function updateVolumeIcon() {
+            if (videoPlayer.volume === 0 || videoPlayer.muted) {
+                volumeIcon.classList.remove('fa-volume-up', 'fa-volume-down');
+                volumeIcon.classList.add('fa-volume-mute');
+            } else if (videoPlayer.volume < 0.5) {
+                volumeIcon.classList.remove('fa-volume-up', 'fa-volume-mute');
+                volumeIcon.classList.add('fa-volume-down');
+            } else {
+                volumeIcon.classList.remove('fa-volume-down', 'fa-volume-mute');
+                volumeIcon.classList.add('fa-volume-up');
+            }
+        }
+        // Initial volume icon set
+        videoPlayer.addEventListener('volumechange', updateVolumeIcon);
+
+
+        // Fullscreen Toggle
+        fullscreenBtn.addEventListener('click', () => {
+            if (!document.fullscreenElement) { // If not in fullscreen
+                if (videoPlayerContainer.requestFullscreen) {
+                    videoPlayerContainer.requestFullscreen();
+                } else if (videoPlayerContainer.mozRequestFullScreen) { // Firefox
+                    videoPlayerContainer.mozRequestFullScreen();
+                } else if (videoPlayerContainer.webkitRequestFullscreen) { // Chrome, Safari, Opera
+                    videoPlayerContainer.webkitRequestFullscreen();
+                } else if (videoPlayerContainer.msRequestFullscreen) { // IE/Edge
+                    videoPlayerContainer.msRequestFullscreen();
+                }
+            } else { // If in fullscreen, exit
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                } else if (document.mozCancelFullScreen) {
+                    document.mozCancelFullScreen();
+                } else if (document.webkitExitFullscreen) {
+                    document.webkitExitFullscreen();
+                } else if (document.msExitFullscreen) {
+                    document.msExitFullscreen();
+                }
+            }
+        });
+
+
+        // --- 8. Event Listener for Closing Player ---
+        closePlayerBtn.addEventListener('click', () => {
+            videoPlayer.pause();
+            videoPlayer.src = ''; // Clear source to stop buffering/playback
+            
+            videoPlayerSection.classList.remove('opacity-100');
+            videoPlayerSection.classList.add('opacity-0');
+            setTimeout(() => {
+                videoPlayerSection.classList.add('hidden');
+            }, 500);
+        });
+
+        // --- 9. Initial Load ---
+        document.addEventListener('DOMContentLoaded', fetchEpisodeData);
+    </script>
+</body>
+</html>
+<!-- 
+ {
+        "id": "ep-1",
+        "title": "Episode 1",
+        "filePath": "videos/show_A/25 - Thursday's Boy.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-2",
+        "title": "Episode 2",
+        "filePath": "videos/show_A/26 - The Secret Woods.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-3",
+        "title": "Episode 3",
+        "filePath": "videos/show_A/27 - Proof.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-4",
+        "title": "Episode 4",
+        "filePath": "videos/show_A/28 - Just One Case.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-5",
+        "title": "Episode 5",
+        "filePath": "videos/show_A/29 - Execution.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-6",
+        "title": "Episode 6",
+        "filePath": "videos/show_A/30 - Decision.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-7",
+        "title": "Episode 7",
+        "filePath": "videos/show_A/31 - In Broad Daylight.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-8",
+        "title": "Episode 8",
+        "filePath": "videos/show_A/32 - Sanctuary.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    }, -->
+

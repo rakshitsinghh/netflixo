@@ -1,0 +1,128 @@
+[
+    {
+        "id": "ep-1",
+        "title": "Episode 1",
+        "filePath": "videos/show_A/25.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-2",
+        "title": "Episode 2",
+        "filePath": "videos/show_A/26.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-3",
+        "title": "Episode 3",
+        "filePath": "videos/show_A/27.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-4",
+        "title": "Episode 4",
+        "filePath": "videos/show_A/28.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-5",
+        "title": "Episode 5",
+        "filePath": "videos/show_A/29.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-6",
+        "title": "Episode 6",
+        "filePath": "videos/show_A/30.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-7",
+        "title": "Episode 7",
+        "filePath": "videos/show_A/31 - In Broad Daylight.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-8",
+        "title": "Episode 8",
+        "filePath": "videos/show_A/32 - Sanctuary.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-11",
+        "title": "Episode 11 (Monster)",
+        "filePath": "videos/show_A/eleven_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-12",
+        "title": "Episode 12 (Monster)",
+        "filePath": "videos/show_A/twelve_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-13",
+        "title": "Episode 13 (Monster)",
+        "filePath": "videos/show_A/thirteen_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-14",
+        "title": "Episode 14 (Monster)",
+        "filePath": "videos/show_A/fourteen_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-15",
+        "title": "Episode 15 (Monster)",
+        "filePath": "videos/show_A/fifteen_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-16",
+        "title": "Episode 16 (Monster)",
+        "filePath": "videos/show_A/sixteen_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-17",
+        "title": "Episode 17 (Monster)",
+        "filePath": "videos/show_A/seventeen_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-18",
+        "title": "Episode 18 (Monster)",
+        "filePath": "videos/show_A/eighteen_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-19",
+        "title": "Episode 19 (Monster)",
+        "filePath": "videos/show_A/nineteen_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    },
+    {
+        "id": "ep-20",
+        "title": "Episode 20 (Monster)",
+        "filePath": "videos/show_A/twenty_monster.mkv",
+        "posterPath": "posters/default_poster.jpg",
+        "description": "A thrilling episode of the series."
+    }
+]
